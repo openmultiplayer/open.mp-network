@@ -463,6 +463,28 @@ public:
     /// \return A pointer to the internal state
     inline unsigned char* GetData(void) const { return data; }
 
+    /// Write an array or casted stream or raw data.  This does NOT do endian swapping.
+    /// \param[in] input a byte buffer
+    /// \param[in] numberOfBytes the size of \a input in bytes
+    void Write(const char* input, const int numberOfBytes);
+
+    /// Write any integral type to a bitstream.  Undefine __BITSTREAM_NATIVE_END if you need endian swapping.
+    /// \param[in] var The value to write
+    template <class templateType>
+    void Write(templateType var);
+
+    /// Read any integral type from a bitstream.  Define __BITSTREAM_NATIVE_END if you need endian swapping.
+    /// \param[in] var The value to read
+    template <class templateType>
+    bool Read(templateType& var);
+
+    /// Read an array or casted stream of byte. The array
+    /// is raw data. There is no automatic endian conversion with this function
+    /// \param[in] output The result byte array. It should be larger than @em numberOfBytes.
+    /// \param[in] numberOfBytes The number of byte to read
+    /// \return true on success false if there is some missing bytes.
+    bool Read(char* output, const int numberOfBytes);
+
 private:
     /// Write a 0
     void Write0(void);
@@ -579,11 +601,6 @@ private:
     /// \return true if \a writeToBitstream is true.  true if \a writeToBitstream is false and the read was successful.  false if \a writeToBitstream is false and the read was not successful.
     bool SerializeBits(bool writeToBitstream, unsigned char* input, int numberOfBitsToSerialize, const bool rightAlignedBits = true);
 
-    /// Write any integral type to a bitstream.  Undefine __BITSTREAM_NATIVE_END if you need endian swapping.
-    /// \param[in] var The value to write
-    template <class templateType>
-    void Write(templateType var);
-
     /// Write any integral type to a bitstream.  If the current value is different from the last value
     /// the current value will be written.  Otherwise, a single bit will be written
     /// \param[in] currentValue The current value to write
@@ -610,11 +627,6 @@ private:
     template <class templateType>
     void WriteCompressedDelta(templateType currentValue);
 
-    /// Read any integral type from a bitstream.  Define __BITSTREAM_NATIVE_END if you need endian swapping.
-    /// \param[in] var The value to read
-    template <class templateType>
-    bool Read(templateType& var);
-
     /// Read any integral type from a bitstream.  If the written value differed from the value compared against in the write function,
     /// var will be updated.  Otherwise it will retain the current value.
     /// ReadDelta is only valid from a previous call to WriteDelta
@@ -632,11 +644,6 @@ private:
     /// \param[in] var The value to read
     template <class templateType>
     bool ReadCompressedDelta(templateType& var);
-
-    /// Write an array or casted stream or raw data.  This does NOT do endian swapping.
-    /// \param[in] input a byte buffer
-    /// \param[in] numberOfBytes the size of \a input in bytes
-    void Write(const char* input, const int numberOfBytes);
 
     /// Write one bitstream to another
     /// \param[in] numberOfBits bits to write
@@ -676,13 +683,6 @@ private:
         templateType m00, templateType m01, templateType m02,
         templateType m10, templateType m11, templateType m12,
         templateType m20, templateType m21, templateType m22);
-
-    /// Read an array or casted stream of byte. The array
-    /// is raw data. There is no automatic endian conversion with this function
-    /// \param[in] output The result byte array. It should be larger than @em numberOfBytes.
-    /// \param[in] numberOfBytes The number of byte to read
-    /// \return true on success false if there is some missing bytes.
-    bool Read(char* output, const int numberOfBytes);
 
     /// Read a normalized 3D vector, using (at most) 4 bytes + 3 bits instead of 12-24 bytes.  Will further compress y or z axis aligned vectors.
     /// Accurate to 1/32767.5.
